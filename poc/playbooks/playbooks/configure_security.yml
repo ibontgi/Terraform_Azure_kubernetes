@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+
+  - name: Add netbridge config ip4
+    lineinfile:
+      path: /etc/sysctl.d/k8s.conf
+      line: 'net.bridge.bridge-nf-call-iptables = 1'
+      state: present
+      create: yes
+
+  - name: Add netbridge config ip6
+    lineinfile:
+      path: /etc/sysctl.d/k8s.conf
+      line: 'net.bridge.bridge-nf-call-ip6tables = 1'
+      state: present
+      create: yes
+  
+  - name: update sysctl
+    command: sysctl --system

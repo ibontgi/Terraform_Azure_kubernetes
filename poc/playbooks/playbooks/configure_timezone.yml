@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Install chrony
+    dnf:
+      name: chrony
+      state: latest
+
+  - name: Start time services
+    systemd:
+      name: chronyd
+      state: started
+      enabled: yes
+
+  - name: Set timezone
+    command: timedatectl set-timezone Europe/Madrid
+
+  - name: Enable ntp
+    command: /usr/bin/timedatectl set-ntp true

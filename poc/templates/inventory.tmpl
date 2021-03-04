@@ -1,0 +1,18 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_user=${ansible_user}
+ansible_password=${ansible_user_pass}
+ansible_ssh_user=${ansible_user}
+
+[kubernetes-master-nodes]
+node.master ansible_host=${master-id}
+
+[kubernetes-worker-nodes]
+node.worker ansible_host=${worker-id}
+
+[kubernetes-nfs-nodes]
+node.nfs ansible_host=${nfs-id}
+
+[kubernetes:children]
+kubernetes-worker-nodes
+kubernetes-master-nodes

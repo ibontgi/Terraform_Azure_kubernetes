@@ -1,0 +1,20 @@
+---
+- hosts: all
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Install the latest version of nfs-utils 
+    dnf:
+      name: nfs-utils 
+      state: latest
+
+  - name: Install the latest version of nfs4-acl-tools
+    dnf:
+      name: nfs4-acl-tools
+      state: latest
+
+  - name: Install the latest version of wget
+    dnf:
+      name: wget
+      state: latest

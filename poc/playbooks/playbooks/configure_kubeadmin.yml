@@ -1,0 +1,29 @@
+---
+- hosts: kubernetes-master-nodes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Add the user 'kubeadmin' with a specific uid and a primary group of 'admin'user:
+    user:
+      name: kubeadmin
+      password: kubeadmin
+    run_once: true
+  - name: Create a directory if it does not exist
+    file:
+      path: /home/kubeadmin/.kube
+      state: directory
+      mode: 0755
+
+  - name: copy admin.conf
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/kubeadmin/.kube/config
+      owner: kubeadmin
+      group: kubeadmin
+  - name: Add fstab
+    blockinfile:
+      path: /etc/fstab
+      block: |
+        kubeadmin ALL=(ALL) NOPASSWD:ALL
+    run_once: true

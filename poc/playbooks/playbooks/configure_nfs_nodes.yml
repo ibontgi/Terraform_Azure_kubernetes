@@ -1,0 +1,87 @@
+---
+- hosts: kubernetes-nfs-nodes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Create a volume group on top of /dev/sdc
+    lvg:
+      vg: data_vg
+      pvs: /dev/sdc
+  - name: Create a logical volume
+    lvol:
+      vg: data_vg
+      lv: nfs_lv
+      size: 9g
+      pvs: /dev/sdc
+      force: yes
+  - name: create filesystem
+    filesystem:
+      fstype: xfs
+      dev: /dev/data_vg/nfs_lv
+
+  - name: Creating a repository file for Kubernetes
+    file:
+      path: /srv/nfs
+      state: directory
+
+  - name: Add fstab
+    blockinfile:
+      path: /etc/fstab
+      block: |
+        /dev/data_vg/nfs_lv        /srv/nfs                xfs     defaults        0 0
+    run_once: true
+
+  - name: mount disc
+    shell: mount -a
+    shell: df -hP
+
+  - name: install nfs
+    dnf:
+      name: nfs-utils
+      state: latest
+  - name: install net-tools
+    dnf:
+      name: net-tools
+      state: latest
+  - name: start nfs-server
+    systemd:
+      name: nfs-server
+      state: started
+      enabled: yes
+
+  - name: add to exports
+    lineinfile:
+      dest: /etc/exports
+      line: "/srv/nfs   {{ hostvars[item].ansible_host }}(rw,sync)"
+      create: yes
+    when: hostvars[item].ansible_host is defined
+    with_items: "{{ groups.all }}"
+  - name: exportfs reload
+    shell: exportfs -r
+  - name: exportfs show
+    shell: exportfs -s
+
+  - name : start firewall
+    systemd:
+      name: firewalld
+      state: started
+
+  - name: open services
+    firewalld:
+      service: nfs
+      state: enabled
+      permanent: yes
+      immediate: yes
+  - name: open service rpc
+    firewalld:
+      service: rpc-bind
+      state: enabled
+      permanent: yes
+      immediate: yes
+  - name: open service mountd
+    firewalld:
+      service: mountd
+      state: enabled
+      permanent: yes
+      immediate: yes

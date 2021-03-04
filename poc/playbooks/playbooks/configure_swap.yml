@@ -1,0 +1,12 @@
+---
+- hosts: kubernetes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Disable swap
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0
+
+  - name: remove swap /etc/fstab
+    command: sed -i '/swap/d' /etc/fstab

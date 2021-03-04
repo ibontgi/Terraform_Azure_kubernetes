@@ -1,0 +1,28 @@
+---
+- hosts: kubernetes-worker-nodes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 10250/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+      zone: public
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 30000-32767/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+      zone: public
+  - name: reload Firewalld
+    systemd:
+      name: firewalld
+      state: reloaded
+
+  - name: initialize the cluster
+    command: kubeadm join --pod-network-cidr=192.169.0.0/16 --token {{ kubeadm_token.stdout }}
+    run_once: true

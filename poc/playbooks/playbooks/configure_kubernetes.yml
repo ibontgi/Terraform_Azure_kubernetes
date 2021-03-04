@@ -1,0 +1,145 @@
+---
+- hosts: kubernetes-master-nodes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Creating a repository file for Kubernetes
+    file:
+     path: /etc/yum.repos.d/kubernetes.repo
+     state: touch
+
+  - name: Add kubernetes repo
+    blockinfile:
+      path: /etc/yum.repos.d/kubernetes.repo
+      block: |
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        enabled=1
+        gpgcheck=1
+        repo_gpgcheck=1
+        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        exclude=kubelet kubeadm kubectl
+
+  - name: Install the latest version of kubernetes
+    dnf:
+      name: "{{ packages }}"
+      state: latest
+      disable_excludes: kubernetes
+    vars:
+      packages:
+        - kubelet
+        - kubeadm
+        - kubectl
+    become: yes
+    run_once: true
+
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 6443/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 2379-2380/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 10250/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 10251/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+      run_once: true
+    run_once: true
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 10252/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 10255/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+  - name: reload Firewalld
+    systemd:
+      name: firewalld
+      state: reloaded
+
+  - name: Pulling images required for setting up a Kubernetes cluster
+    shell: kubeadm config images pull
+    run_once: true
+
+  - name: Resetting kubeadm
+    systemd:
+      name: kubeadm
+      daemon_reload: yes
+
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      rich_rule: 'rule family=ipv4 source address={{worker_addr}}/32 accept'
+      state: enabled
+      permanent: yes
+      immediate: yes
+    run_once: true
+
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      rich_rule: 'rule family=ipv4 source address=172.17.0.0/16 accept'
+      state: enabled
+      permanent: yes
+      immediate: yes
+      zone: public
+    run_once: true
+  - name: reload Firewalld
+    systemd:
+      name: firewalld
+      state: reloaded
+
+  - name: generate token
+    command: kubeadm token generate
+    register: kubeadm_token
+    run_once: true
+
+  - name: initialize the cluster
+    command: kubeadm init --pod-network-cidr=192.169.0.0/16 --token {{ kubeadm_token.stdout }}
+    run_once: true
+
+  - name: Create a directory if it does not exist
+    file:
+      path: /root/.kube
+      state: directory
+      mode: 0755
+
+  - name: temp permision
+    file:
+      path: /etc/kubernetes/admin.conf
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: copy admin.conf
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /root/.kube/config
+      owner: root
+      group: root
+  - name: check nodes
+    command: kubectl get nodes

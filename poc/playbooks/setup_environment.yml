@@ -1,0 +1,12 @@
+---
+- import_playbook: playbooks/configure_timezone.yml
+- import_playbook: playbooks/configure_security.yml
+- import_playbook: playbooks/configure_packages.yml
+- import_playbook: playbooks/configure_nfs_nodes.yml
+- import_playbook: playbooks/configure_host.yml
+- import_playbook: playbooks/configure_firewall.yml
+- import_playbook: playbooks/configure_swap.yml
+- import_playbook: playbooks/configure_docker.yml
+- import_playbook: playbooks/configure_kubernetes.yml
+- import_playbook: playbooks/configure_worker_nodes.yml
+- import_playbook: playbooks/configure_kubeadmin.yml

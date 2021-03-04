@@ -1,0 +1,24 @@
+---
+- hosts: kubernetes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name:
+    command: dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+  - name: Install docker
+    dnf:
+      name: docker-ce-19.03.14-3.el8, containerd.io
+      state: latest
+    run_once: true
+  - name : enable docker
+    systemd:
+      enabled: yes
+      state: started
+      name: docker
+
+  - name : enable docker
+    systemd:
+      daemon_reload: yes
+      name: docker
+  

@@ -1,0 +1,10 @@
+/terraform.exe
+/poc/.terraform.lock.hcl
+/poc/terraform.tfstate
+/poc/terraform.tfstate.backup
+/.terraform.tfstate.lock.info
+/poc/.terraform
+/poc/credentials.tf
+/poc/private_key.pem
+/poc/playbooks/playbooks/env_variables
+/poc/playbooks/hosts

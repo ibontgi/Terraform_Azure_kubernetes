@@ -1,0 +1,23 @@
+---
+- hosts: kubernetes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: modprobe
+    command: modprobe br_netfilter
+
+  - name : start firewall
+    systemd:
+      name: firewalld
+      state: started
+
+  - name: activate transparent masquerading
+    firewalld:
+      masquerade: yes
+      state: enabled
+
+  - name: reload service firewalld
+    systemd:
+      name: firewalld
+      state: reloaded
