@@ -59,8 +59,5 @@
       name: firewalld
       state: reloaded
 
-  - set_fact:
-      join_cmd: {{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-2][:-2] }} {{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-1] }}
-
   - name: initialize the cluster
-    command: 
+    command: "{{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-2][:-2] }} {{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-1] }}"
