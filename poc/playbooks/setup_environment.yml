@@ -8,5 +8,7 @@
 - import_playbook: playbooks/configure_swap.yml
 - import_playbook: playbooks/configure_docker.yml
 - import_playbook: playbooks/configure_kubernetes.yml
+- import_playbook: playbooks/configure_calico.yml
 - import_playbook: playbooks/configure_worker_nodes.yml
+- import_playbook: playbooks/configure_ingress_controller.yml
 - import_playbook: playbooks/configure_kubeadmin.yml

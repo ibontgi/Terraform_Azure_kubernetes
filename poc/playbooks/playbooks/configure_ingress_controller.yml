@@ -1,0 +1,33 @@
+---
+- hosts: kubernetes-master-nodes
+  become: yes
+  vars_files:
+  - env_variables
+  tasks:
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 30432 /tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 31967/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+  - name: Allow Network Ports in Firewalld
+    firewalld:
+      port: 31588/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+
+  - name: reload Firewalld
+    systemd:
+      name: firewalld
+      state: reloaded
+
+  - name: apply calico
+    shell: kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/v1.5/deploy/haproxy-ingress.yaml

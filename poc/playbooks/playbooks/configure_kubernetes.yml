@@ -33,7 +33,8 @@
         - kubeadm
         - kubectl
     become: yes
-    run_once: true
+    ignore_errors: yes
+
 
   - name: Allow Network Ports in Firewalld
     firewalld:
@@ -41,43 +42,42 @@
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 2379-2380/tcp
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 10250/tcp
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 10251/tcp
       state: enabled
       permanent: yes
       immediate: yes
-      run_once: true
-    run_once: true
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 10252/tcp
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 10255/tcp
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
+
   - name: reload Firewalld
     systemd:
       name: firewalld
@@ -85,7 +85,8 @@
 
   - name: Pulling images required for setting up a Kubernetes cluster
     shell: kubeadm config images pull
-    run_once: true
+    ignore_errors: yes
+
 
   - name: Resetting kubeadm
     systemd:
@@ -98,7 +99,6 @@
       state: enabled
       permanent: yes
       immediate: yes
-    run_once: true
 
   - name: Allow Network Ports in Firewalld
     firewalld:
@@ -107,20 +107,22 @@
       permanent: yes
       immediate: yes
       zone: public
-    run_once: true
+
   - name: reload Firewalld
     systemd:
       name: firewalld
       state: reloaded
 
   - name: generate token
-    command: kubeadm token generate
+    shell: kubeadm token generate
     register: kubeadm_token
-    run_once: true
+
 
   - name: initialize the cluster
-    command: kubeadm init --pod-network-cidr=192.169.0.0/16 --token {{ kubeadm_token.stdout }}
-    run_once: true
+    shell: kubeadm init --pod-network-cidr=192.169.0.0/16 --token {{ kubeadm_token.stdout }}
+    register: kubeadm_init
+
+  - debug: var=hostvars['node.master']['kubeadm_init']['stdout']
 
   - name: Create a directory if it does not exist
     file:

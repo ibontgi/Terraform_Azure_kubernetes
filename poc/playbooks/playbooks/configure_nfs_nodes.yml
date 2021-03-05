@@ -30,7 +30,7 @@
       path: /etc/fstab
       block: |
         /dev/data_vg/nfs_lv        /srv/nfs                xfs     defaults        0 0
-    run_once: true
+
 
   - name: mount disc
     shell: mount -a

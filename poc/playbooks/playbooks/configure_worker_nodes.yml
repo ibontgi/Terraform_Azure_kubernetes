@@ -4,6 +4,42 @@
   vars_files:
   - env_variables
   tasks:
+  - name: Creating a repository file for Kubernetes
+    file:
+     path: /etc/yum.repos.d/kubernetes.repo
+     state: touch
+
+  - name: Add kubernetes repo
+    blockinfile:
+      path: /etc/yum.repos.d/kubernetes.repo
+      block: |
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        enabled=1
+        gpgcheck=1
+        repo_gpgcheck=1
+        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        exclude=kubelet kubeadm kubectl
+
+  - name: Install the latest version of kubernetes
+    dnf:
+      name: "{{ packages }}"
+      state: latest
+      disable_excludes: kubernetes
+    vars:
+      packages:
+        - kubelet
+        - kubeadm
+        - kubectl
+    become: yes
+    ignore_errors: yes
+
+  - name: Resetting kubeadm
+    systemd:
+      name: kubeadm
+      daemon_reload: yes
+
   - name: Allow Network Ports in Firewalld
     firewalld:
       port: 10250/tcp
@@ -23,6 +59,8 @@
       name: firewalld
       state: reloaded
 
+  - set_fact:
+      join_cmd: {{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-2][:-2] }} {{ hostvars['node.master']['kubeadm_init']['stdout_lines'][-1] }}
+
   - name: initialize the cluster
-    command: kubeadm join --pod-network-cidr=192.169.0.0/16 --token {{ kubeadm_token.stdout }}
-    run_once: true
+    command: 
